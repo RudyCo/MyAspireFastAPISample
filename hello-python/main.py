@@ -1,7 +1,6 @@
 import logging
 import os
 from fastapi import FastAPI, HTTPException, Response
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 debug = os.environ.get("DEBUG", "False").lower() == "true"
 logging.basicConfig(
