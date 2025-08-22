@@ -1,6 +1,7 @@
 import logging
 import os
 from fastapi import FastAPI, HTTPException, Response
+from scalar_fastapi.scalar_fastapi import get_scalar_api_reference
 
 debug = os.environ.get("DEBUG", "False").lower() == "true"
 logging.basicConfig(
@@ -11,7 +12,22 @@ logger.info("Debug mode is %s", "ON" if debug else "OFF")
 
 logger.info("Starting FastAPI application...")
 
-app = FastAPI(title="FastAPI application")
+app = FastAPI(
+    title="FastAPI application",
+    docs_url=None,  # disable Swagger UI
+    redoc_url=None,  # disable ReDoc
+)
+
+# Mount Scalar API Reference at /docs
+app.mount(
+    "/docs",
+    get_scalar_api_reference(
+        openapi_url="/openapi.json",
+        title="FastAPI application API",
+    ),
+    name="scalar-docs",
+)
+
 
 @app.get("/")
 async def read_root():
@@ -19,11 +35,13 @@ async def read_root():
     logger.info(msg)
     return Response(content=str(msg), media_type="text/plain")
 
+
 @app.get("/debug")
 async def test_debug():
     msg = "Debug!"
     logger.debug(msg)
     return Response(content=str(msg), media_type="text/plain")
+
 
 @app.get("/info")
 async def test_info():
@@ -31,17 +49,20 @@ async def test_info():
     logger.info(msg)
     return Response(content=str(msg), media_type="text/plain")
 
+
 @app.get("/warning")
 async def test_warning():
     msg = "Warning!"
     logger.warning(msg)
     raise HTTPException(status_code=500, detail=msg)
 
+
 @app.get("/error")
 async def test_error():
     msg = "Error!"
     logger.error(msg)
     raise HTTPException(status_code=500, detail=msg)
+
 
 @app.get("/critical")
 async def test_critical():
